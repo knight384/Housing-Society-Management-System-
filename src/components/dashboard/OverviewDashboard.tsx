@@ -83,6 +83,15 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({ setActiveT
             )}
 
             <button
+              id="dash-btn-community-hub"
+              onClick={() => setActiveTab("community")}
+              className="px-3.5 py-2.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-900 border border-indigo-200 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition"
+            >
+              <Users className="w-4 h-4 text-indigo-600" />
+              <span>Community Hub</span>
+            </button>
+
+            <button
               id="dash-btn-quick-pass"
               onClick={() => setActiveTab("visitors")}
               className="px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-semibold flex items-center gap-2 shadow-xs transition"

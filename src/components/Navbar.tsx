@@ -18,7 +18,8 @@ import {
   DoorOpen,
   Wrench,
   BarChart3,
-  ShieldCheck
+  ShieldCheck,
+  Users
 } from "lucide-react";
 import { NotificationDrawer } from "./NotificationDrawer";
 
@@ -60,6 +61,7 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
     { id: "notices", label: "Notice Board", icon: Megaphone },
     { id: "visitors", label: "Visitor Passes", icon: DoorOpen },
     { id: "tickets", label: "Helpdesk", icon: Wrench },
+    { id: "community", label: "Community Hub", icon: Users },
     { id: "analytics", label: "Analytics", icon: BarChart3 },
     { id: "financials", label: "Admin & Reports", icon: ShieldCheck },
     { id: "gdpr", label: "Backup & GDPR", icon: Database }

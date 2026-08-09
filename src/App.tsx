@@ -8,6 +8,7 @@ import { AmenityBooking } from "./components/amenities/AmenityBooking";
 import { NoticeBoard } from "./components/notices/NoticeBoard";
 import { VisitorManagement } from "./components/visitors/VisitorManagement";
 import { MaintenanceHelpdesk } from "./components/tickets/MaintenanceHelpdesk";
+import { CommunityHub } from "./components/community/CommunityHub";
 import { FinancialReports } from "./components/admin/FinancialReports";
 import { GDPRBackupCenter } from "./components/gdpr/GDPRBackupCenter";
 import { RealtimeAnalytics } from "./components/analytics/RealtimeAnalytics";
@@ -56,6 +57,8 @@ function MainContent() {
             {activeTab === "visitors" && <VisitorManagement />}
 
             {activeTab === "tickets" && <MaintenanceHelpdesk />}
+
+            {activeTab === "community" && <CommunityHub />}
 
             {activeTab === "analytics" && <RealtimeAnalytics />}
 
