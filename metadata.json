@@ -1,0 +1,6 @@
+{
+  "name": "SocietyHub - Housing Society Management",
+  "description": "Comprehensive Housing Society Management Portal featuring maintenance & dues tracking, payment gateway, visitor passes, amenity bookings, digital notice board, helpdesk, financial analytics, and GDPR privacy settings.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
