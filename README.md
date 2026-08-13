@@ -42,7 +42,28 @@ CivicHQ is an enterprise-grade, full-stack Housing Society & Residential Communi
 * **Peer Marketplace**: Resident classifieds to buy/sell items, rent parking bays, or borrow tools.
 * **Events Calendar**: Community cultural events and RWA townhalls with RSVP attendance tracking.
 
-### 8. 📈 Financial Ledger & Real-Time Analytics
+### 8. 📁 Secure Document Locker & Repository
+* **Society-Wide Repository**: Access certified society bylaws, AGM meeting minutes, municipal property tax vouchers, fire NOC compliance certificates, and renovation SOP guidelines.
+* **Personal Unit Vault**: Confidential storage restricted to individual flat owners (e.g., flat allotment letters, unit property tax vouchers, parking bay certificates).
+* **RWA Official Verification Seal**: Digital seal badge verifying official executive committee approval and document integrity.
+* **Interactive Document Inspector**: Read-only inspection modal with SHA256 security checksum previews, metadata tracking, and audit-logged file downloads.
+* **Document Upload & Tagging**: RWA admins and residents can upload documents with category classification, format tags, and confidentiality controls.
+
+### 9. 📅 Shared Society Calendar & Personal Sync
+* **Automated Multi-Source Aggregation**: Auto-populates in real-time with amenity bookings, scheduled maintenance downtime, RWA townhalls, fire drills, and cultural events.
+* **Personal Calendar Sync (.ics)**: One-click export of individual events or full month schedules as standard `.ics` files compatible with Apple Calendar, Outlook, and mobile devices.
+* **Direct Google Calendar Link**: Instant "Add to Google Calendar" button generating pre-filled calendar creation links.
+* **Community RSVP Tracking**: Residents can mark attendance ("Attending") for society meetings and cultural events.
+* **Month Grid & Agenda Views**: Toggle between interactive monthly grid view and detailed chronological agenda schedule list with search and category filtering.
+
+### 10. 📞 Verified Local Services Directory
+* **Empaneled Local Directory**: Curated contact details for RWA-vetted local plumbers, electricians, grocery delivery marts, HVAC mechanics, carpenters, and pest control specialists.
+* **24/7 Emergency Duty Hotline**: Quick-dial emergency hotline banner for pipe bursts, electrical short circuits, and immediate gate deliveries.
+* **Direct Contact Triggers**: Instant one-click phone calling (`tel:`), direct WhatsApp chat links (`wa.me`), and one-tap phone copying.
+* **Resident Star Ratings & Reviews**: Transparent resident reviews with flat unit verification badges (e.g., "Alex Rivera (A-402)").
+* **Provider Recommendations**: Form modal allowing residents and RWA admins to recommend new local plumbers, electricians, or neighborhood grocery stores.
+
+### 11. 📈 Financial Ledger & Real-Time Analytics
 * **Revenue vs. Expense Tracking**: Interactive Recharts analytics displaying monthly collection trends and expense categories.
 * **Financial Balance Sheet**: Complete RWA reserve fund breakdown and downloadable audit reports (CSV/PDF).
 

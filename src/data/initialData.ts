@@ -12,7 +12,10 @@ import {
   ServiceVendor,
   PushNotification,
   AuditLog,
-  GdprConsent
+  GdprConsent,
+  DocumentItem,
+  SocietyEvent,
+  VerifiedService
 } from "../types";
 
 export const initialProfiles: UserProfile[] = [
@@ -27,11 +30,60 @@ export const initialProfiles: UserProfile[] = [
     flatType: "3BHK",
     ownerType: "Owner",
     moveInDate: "2023-04-15",
-    emergencyContact: "+1 (555) 987-6543 (Sibling)",
+    emergencyContact: "+1 (555) 987-6543",
+    emergencyContactName: "Elena Rivera",
+    emergencyContactRelation: "Sibling",
     vehicles: [
       { type: "Car", regNo: "GV-402-A", slotNo: "B1-42" },
       { type: "Bike", regNo: "GV-402-B", slotNo: "B1-43" }
-    ]
+    ],
+    familyMembers: [
+      {
+        id: "fm-1",
+        name: "Sophia Rivera",
+        relation: "Spouse",
+        phone: "+1 (555) 234-5679",
+        email: "sophia.rivera@example.com",
+        age: 32,
+        gateAccessAllowed: true
+      },
+      {
+        id: "fm-2",
+        name: "Leo Rivera",
+        relation: "Child",
+        age: 6,
+        gateAccessAllowed: false
+      }
+    ],
+    pets: [
+      {
+        id: "pet-1",
+        name: "Milo",
+        species: "Dog",
+        breed: "Golden Retriever",
+        vaccinated: true,
+        vaccinationDueDate: "2027-01-15",
+        rabiesTagNumber: "RAB-2026-904"
+      }
+    ],
+    notificationPreferences: {
+      email: true,
+      sms: true,
+      push: true,
+      whatsapp: true,
+      categories: {
+        duesAndPayments: true,
+        gateAndVisitors: true,
+        noticesAndAnnouncements: true,
+        maintenanceAndHelpdesk: true,
+        societyEvents: true
+      },
+      quietHours: {
+        enabled: true,
+        startTime: "22:00",
+        endTime: "07:00"
+      }
+    }
   },
   {
     id: "user-admin-1",
@@ -44,10 +96,52 @@ export const initialProfiles: UserProfile[] = [
     flatType: "4BHK",
     ownerType: "Owner",
     moveInDate: "2021-01-10",
-    emergencyContact: "+1 (555) 888-1234 (Spouse)",
+    emergencyContact: "+1 (555) 888-1234",
+    emergencyContactName: "David Jenkins",
+    emergencyContactRelation: "Spouse",
     vehicles: [
       { type: "Car", regNo: "GV-101-B", slotNo: "B1-02" }
-    ]
+    ],
+    familyMembers: [
+      {
+        id: "fm-3",
+        name: "David Jenkins",
+        relation: "Spouse",
+        phone: "+1 (555) 888-1234",
+        email: "david.j@example.com",
+        age: 38,
+        gateAccessAllowed: true
+      }
+    ],
+    pets: [
+      {
+        id: "pet-2",
+        name: "Cleo",
+        species: "Cat",
+        breed: "Siamese",
+        vaccinated: true,
+        vaccinationDueDate: "2026-11-20",
+        rabiesTagNumber: "RAB-2026-112"
+      }
+    ],
+    notificationPreferences: {
+      email: true,
+      sms: true,
+      push: true,
+      whatsapp: false,
+      categories: {
+        duesAndPayments: true,
+        gateAndVisitors: true,
+        noticesAndAnnouncements: true,
+        maintenanceAndHelpdesk: true,
+        societyEvents: true
+      },
+      quietHours: {
+        enabled: false,
+        startTime: "23:00",
+        endTime: "06:00"
+      }
+    }
   },
   {
     id: "user-sec-1",
@@ -61,7 +155,29 @@ export const initialProfiles: UserProfile[] = [
     ownerType: "Tenant",
     moveInDate: "2022-06-01",
     emergencyContact: "+1 (555) 777-2222",
-    vehicles: []
+    emergencyContactName: "Priya Kumar",
+    emergencyContactRelation: "Spouse",
+    vehicles: [],
+    familyMembers: [],
+    pets: [],
+    notificationPreferences: {
+      email: false,
+      sms: true,
+      push: true,
+      whatsapp: true,
+      categories: {
+        duesAndPayments: false,
+        gateAndVisitors: true,
+        noticesAndAnnouncements: true,
+        maintenanceAndHelpdesk: true,
+        societyEvents: false
+      },
+      quietHours: {
+        enabled: false,
+        startTime: "22:00",
+        endTime: "06:00"
+      }
+    }
   }
 ];
 
@@ -694,3 +810,466 @@ export const initialGdprConsent: GdprConsent = {
   dataRetentionAcknowledged: true,
   lastUpdated: "2026-08-01"
 };
+
+export const initialDocuments: DocumentItem[] = [
+  {
+    id: "doc-1",
+    title: "Grand Vista Heights Constitution & Society Bylaws (2025 Revised)",
+    category: "Society Bylaws & Rules",
+    description: "Official registered constitution covering community rules, pet regulations, noise hours, terrace guidelines, and election protocols.",
+    fileType: "PDF",
+    fileSize: "4.8 MB",
+    uploadedBy: "RWA Executive Board",
+    uploadedByRole: "admin",
+    uploadDate: "2025-01-15",
+    isPrivate: false,
+    downloadCount: 142,
+    certifiedSeal: true,
+    tags: ["Bylaws", "Constitution", "Pet Rules", "Terrace Rules", "RWA"]
+  },
+  {
+    id: "doc-2",
+    title: "Annual General Meeting (AGM 2025) Official Minutes & Budget Resolution",
+    category: "Meeting Minutes & AGM",
+    description: "Certified minutes of 2025 AGM detailing financial budget approvals, solar panel project sign-off, and elevator overhaul resolution.",
+    fileType: "PDF",
+    fileSize: "2.1 MB",
+    uploadedBy: "Sarah Jenkins (RWA Secretary)",
+    uploadedByRole: "admin",
+    uploadDate: "2025-11-20",
+    isPrivate: false,
+    downloadCount: 89,
+    certifiedSeal: true,
+    tags: ["AGM", "Minutes", "Budget 2025", "Solar Project"]
+  },
+  {
+    id: "doc-3",
+    title: "Municipal Property Tax Assessment & Consolidated Voucher FY2025-26",
+    category: "Tax & Audit Statements",
+    description: "Consolidated municipal property tax payment receipt and assessment cert for Grand Vista Heights common areas and clubhouse.",
+    fileType: "PDF",
+    fileSize: "3.5 MB",
+    uploadedBy: "RWA Finance Desk",
+    uploadedByRole: "admin",
+    uploadDate: "2026-04-10",
+    isPrivate: false,
+    downloadCount: 64,
+    certifiedSeal: true,
+    tags: ["Property Tax", "Municipal Receipt", "Audit", "Common Areas"]
+  },
+  {
+    id: "doc-4",
+    title: "Fire Safety Inspectorate Compliance NOC & Lift AMC Certificate",
+    category: "NOC & Safety Certificates",
+    description: "Fire department renewal No-Objection Certificate (NOC) and Schindler elevator safety clearance certificate for Towers A, B, & C.",
+    fileType: "PDF",
+    fileSize: "1.9 MB",
+    uploadedBy: "Estate Safety Desk",
+    uploadedByRole: "admin",
+    uploadDate: "2026-03-01",
+    isPrivate: false,
+    downloadCount: 112,
+    certifiedSeal: true,
+    tags: ["Fire NOC", "Elevator Clearance", "Schindler", "Safety Certificate"]
+  },
+  {
+    id: "doc-5",
+    title: "Interior Renovation & Architectural Modification Guidelines (SOP)",
+    category: "Maintenance Guides",
+    description: "Mandated rules for flat interior works, permitted drill timings (10 AM - 5 PM weekdays), elevator protective padding, and waste clearance.",
+    fileType: "PDF",
+    fileSize: "1.2 MB",
+    uploadedBy: "Estate Operations",
+    uploadedByRole: "admin",
+    uploadDate: "2025-08-12",
+    isPrivate: false,
+    downloadCount: 76,
+    certifiedSeal: false,
+    tags: ["Renovation SOP", "No-Noise Timings", "Architectural Rules"]
+  },
+  {
+    id: "doc-6",
+    title: "Flat A-402 Property Tax Paid Receipt & Municipal Voucher (2025-26)",
+    category: "Personal Unit Locker",
+    description: "Verified individual municipal property tax clearance receipt for Flat A-402.",
+    fileType: "PDF",
+    fileSize: "850 KB",
+    uploadedBy: "Alex Rivera",
+    uploadedByRole: "resident",
+    uploadDate: "2026-05-18",
+    isPrivate: true,
+    unitNumber: "A-402",
+    downloadCount: 8,
+    certifiedSeal: true,
+    tags: ["Flat A-402", "Property Tax", "Paid Receipt"]
+  },
+  {
+    id: "doc-7",
+    title: "Flat A-402 Basement Parking Slot Allocation Certificate (B1-42 & B1-43)",
+    category: "Personal Unit Locker",
+    description: "Certified allotment letter for covered basement parking bays B1-42 (Car) and B1-43 (Bike) assigned to Flat A-402.",
+    fileType: "PDF",
+    fileSize: "1.4 MB",
+    uploadedBy: "RWA Management",
+    uploadedByRole: "admin",
+    uploadDate: "2023-04-18",
+    isPrivate: true,
+    unitNumber: "A-402",
+    downloadCount: 14,
+    certifiedSeal: true,
+    tags: ["Parking Bay", "Slot B1-42", "Allocation Letter", "A-402"]
+  },
+  {
+    id: "doc-8",
+    title: "Quarterly Water Quality Audit & Solar Energy Yield Report Q2 2026",
+    category: "Tax & Audit Statements",
+    description: "Lab test report for drinking water purity, borewell hardness levels, and rooftop solar grid energy offset performance metrics.",
+    fileType: "PDF",
+    fileSize: "3.1 MB",
+    uploadedBy: "Green Energy Committee",
+    uploadedByRole: "admin",
+    uploadDate: "2026-07-01",
+    isPrivate: false,
+    downloadCount: 45,
+    certifiedSeal: false,
+    tags: ["Water Audit", "Solar Yield", "Environmental Test"]
+  }
+];
+
+export const initialSocietyEvents: SocietyEvent[] = [
+  {
+    id: "evt-1",
+    title: "OTIS Elevator Motor Servicing & Load Calibration",
+    category: "Maintenance Drive",
+    date: "2026-08-12",
+    startTime: "10:00 AM",
+    endTime: "02:00 PM",
+    location: "Towers A, B, & C Lifts",
+    organizer: "OTIS AMC Engineers & RWA",
+    description: "Quarterly routine elevator maintenance, brake testing, and shaft rail lubrication.",
+    rsvpCount: 34,
+    rsvpedBy: ["A-402", "B-101", "C-204"],
+    isMandatory: true
+  },
+  {
+    id: "evt-2",
+    title: "RWA General Body Quarterly Meeting (GBM)",
+    category: "Society Meeting",
+    date: "2026-08-14",
+    startTime: "06:00 PM",
+    endTime: "08:00 PM",
+    location: "Clubhouse Conference Room & Zoom",
+    organizer: "RWA Managing Committee",
+    description: "Review of Q2 financial statement, EV charger vendor selection, and security guard contract renewal vote.",
+    rsvpCount: 68,
+    rsvpedBy: ["A-402", "B-101"],
+    isMandatory: true
+  },
+  {
+    id: "evt-3",
+    title: "Society Fire Alarm Test & Evacuation Drill",
+    category: "Emergency Drill",
+    date: "2026-08-15",
+    startTime: "03:00 PM",
+    endTime: "04:30 PM",
+    location: "Central Courtyard & Fire Shafts",
+    organizer: "Safety & Emergency Board",
+    description: "Annual municipal fire safety verification, hose reel pressurization test, and fire exit clear check.",
+    rsvpCount: 112,
+    rsvpedBy: ["A-402", "B-101", "D-501"],
+    isMandatory: true
+  },
+  {
+    id: "evt-4",
+    title: "Monsoon Cultural Fest & Food Flea Market",
+    category: "Cultural Event",
+    date: "2026-08-22",
+    startTime: "04:00 PM",
+    endTime: "09:30 PM",
+    location: "Central Clubhouse Lawn",
+    organizer: "Cultural Committee",
+    description: "Community monsoon celebration featuring live musical band, resident food stalls, children's art show, and games.",
+    rsvpCount: 145,
+    rsvpedBy: ["A-402", "B-101", "C-204", "D-501"],
+    isMandatory: false
+  },
+  {
+    id: "evt-5",
+    title: "Rooftop Solar Expansion & Net Metering Workshop",
+    category: "Community Workshop",
+    date: "2026-08-25",
+    startTime: "07:00 PM",
+    endTime: "08:30 PM",
+    location: "Multipurpose Party Hall",
+    organizer: "Green Energy Committee",
+    description: "Informational session on solar power yield, cost savings allocation, and individual flat solar tie-in options.",
+    rsvpCount: 29,
+    rsvpedBy: ["A-402"],
+    isMandatory: false
+  }
+];
+
+export const initialVerifiedServices: VerifiedService[] = [
+  {
+    id: "vs-1",
+    name: "AquaFlow Emergency Plumbing & Leak Experts",
+    category: "Plumbing",
+    contactPerson: "Master Mario Rossi",
+    phone: "+1 (555) 234-9001",
+    alternatePhone: "+1 (555) 234-9002",
+    whatsapp: "+15552349001",
+    email: "emergency@aquaflowplumbing.com",
+    address: "Unit 4, Commerce Row (0.8 miles from Grand Vista)",
+    rating: 4.9,
+    reviewCount: 54,
+    is24x7Emergency: true,
+    isRwaVerified: true,
+    verificationDate: "2026-01-10",
+    operatingHours: "24 Hours / 7 Days (Emergency Callouts)",
+    estimatedResponseTime: "15 - 25 Mins to Gate",
+    pricingInfo: "$20 Standard Visit Fee / Free Overhead Inspection",
+    servicesOffered: [
+      "24/7 Pipe Burst & Leak Fix",
+      "Bathroom & Kitchen Tap Replacement",
+      "Drain Unblocking & Jet Pressure",
+      "Water Heater / Geyser Installation",
+      "Overhead Water Tank Cleaning"
+    ],
+    description: "Primary RWA-empaneled plumbing service provider for Grand Vista Heights. Resident-vetted plumbers with verified ID gate passes and emergency response tools.",
+    reviews: [
+      {
+        id: "rev-101",
+        residentName: "Alex Rivera",
+        unitNumber: "A-402",
+        rating: 5,
+        comment: "Arrived within 18 minutes at midnight when our kitchen sink pipe burst. Extremely fast, clean work and fair pricing!",
+        date: "2026-07-28"
+      },
+      {
+        id: "rev-102",
+        residentName: "Dr. Marcus Vance",
+        unitNumber: "B-101",
+        rating: 5,
+        comment: "Installed our new thermostatic shower valve in Flat B-101. Very professional and polite.",
+        date: "2026-06-14"
+      }
+    ]
+  },
+  {
+    id: "vs-2",
+    name: "VoltExpert Electricals & EV Charger Care",
+    category: "Electrical",
+    contactPerson: "David Sparks",
+    phone: "+1 (555) 345-8812",
+    whatsapp: "+15553458812",
+    email: "service@voltexpert.com",
+    address: "88 Main Boulevard, Civic Hub",
+    rating: 4.8,
+    reviewCount: 42,
+    is24x7Emergency: true,
+    isRwaVerified: true,
+    verificationDate: "2026-02-01",
+    operatingHours: "07:00 AM - 10:00 PM (Emergency Desk 24/7)",
+    estimatedResponseTime: "20 - 30 Mins",
+    pricingInfo: "$18 Diagnostic Visit / Standard Hourly Rate",
+    servicesOffered: [
+      "Short Circuit & MCB Tripping Fix",
+      "Residential EV Wallbox Charger Installation",
+      "Chandelier & Architectural Lighting Setup",
+      "Switchboard & Power Socket Upgrades",
+      "Inverter & Battery Backup Wiring"
+    ],
+    description: "Certified licensed electricians specializing in multi-story residential towers, circuit diagnostic testing, and home EV charger setups.",
+    reviews: [
+      {
+        id: "rev-103",
+        residentName: "Elena Rostova",
+        unitNumber: "C-204",
+        rating: 5,
+        comment: "Installed our Level 2 EV Charger in the basement parking bay C-12. Perfectly routed and fully inspected by RWA.",
+        date: "2026-08-01"
+      }
+    ]
+  },
+  {
+    id: "vs-3",
+    name: "FreshFarm Express Grocery & Organic Mart",
+    category: "Grocery & Delivery",
+    contactPerson: "Anita Patel (Store Manager)",
+    phone: "+1 (555) 998-1122",
+    whatsapp: "+15559981122",
+    email: "orders@freshfarmexpress.com",
+    address: "Grand Vista Heights Gate 1 Commercial Plaza",
+    rating: 4.9,
+    reviewCount: 88,
+    is24x7Emergency: false,
+    isRwaVerified: true,
+    verificationDate: "2025-11-15",
+    operatingHours: "06:30 AM - 10:00 PM Daily",
+    estimatedResponseTime: "10 - 20 Mins Express Gate Delivery",
+    pricingInfo: "Free Doorstep Delivery on orders above $15",
+    servicesOffered: [
+      "15-Minute Express Apartment Delivery",
+      "Farm-Fresh Fruits & Hydroponic Vegetables",
+      "Organic A2 Milk, Artisanal Breads & Dairy",
+      "Daily Household Pantry Essentials & Beverages",
+      "Monthly Bulk Grain & Grocery Subscriptions"
+    ],
+    description: "Trusted local neighborhood grocery market situated right outside Gate 1. Features dedicated resident delivery runners with contactless doorstep delivery.",
+    reviews: [
+      {
+        id: "rev-104",
+        residentName: "Sophia Zhang",
+        unitNumber: "D-501",
+        rating: 5,
+        comment: "Fresh veggies and organic milk delivered to our doorstep every morning by 7:00 AM. Unbeatable convenience!",
+        date: "2026-08-05"
+      }
+    ]
+  },
+  {
+    id: "vs-4",
+    name: "Grand Vista In-House Community Mart",
+    category: "Grocery & Delivery",
+    contactPerson: "Rajesh Sharma",
+    phone: "+1 (555) 777-3344",
+    whatsapp: "+15557773344",
+    address: "Clubhouse Commercial Zone - Store #2",
+    rating: 4.7,
+    reviewCount: 61,
+    is24x7Emergency: false,
+    isRwaVerified: true,
+    verificationDate: "2025-08-20",
+    operatingHours: "07:00 AM - 09:30 PM",
+    estimatedResponseTime: "5 - 10 Mins (Inside Complex)",
+    pricingInfo: "Zero Delivery Fee for All Residents",
+    servicesOffered: [
+      "Instant In-Society Flat Delivery",
+      "Bottled Drinking Water Cans (20L)",
+      "Daily Bread, Butter & Pantry Staples",
+      "Ice Creams, Snacks & Party Beverages",
+      "Emergency Housekeeping Supplies"
+    ],
+    description: "Located directly inside the society clubhouse commercial wing. Offers instant phone & WhatsApp ordering for residents.",
+    reviews: [
+      {
+        id: "rev-105",
+        residentName: "Alex Rivera",
+        unitNumber: "A-402",
+        rating: 5,
+        comment: "Rajesh is a lifesaver when you need 20L water cans or extra ice cream for guests in under 10 minutes!",
+        date: "2026-07-19"
+      }
+    ]
+  },
+  {
+    id: "vs-5",
+    name: "CoolBreeze AC Servicing & Refrigeration Care",
+    category: "HVAC & Appliance",
+    contactPerson: "Kenji Sato",
+    phone: "+1 (555) 666-4411",
+    whatsapp: "+15556664411",
+    email: "support@coolbreezehvac.com",
+    address: "14 Parkline Avenue, Tech District",
+    rating: 4.7,
+    reviewCount: 39,
+    is24x7Emergency: false,
+    isRwaVerified: true,
+    verificationDate: "2026-03-12",
+    operatingHours: "08:00 AM - 08:00 PM (Mon - Sat)",
+    estimatedResponseTime: "Same-Day Booking Available",
+    pricingInfo: "$25 Air Conditioner Deep Jet Foam Cleaning",
+    servicesOffered: [
+      "Split & Multi-Split AC Foam Jet Wash",
+      "R410a / R32 Eco Gas Top-Up & Leak Repair",
+      "Refrigerator Compressor & Defrost Repairs",
+      "Washing Machine & Dishwasher Maintenance",
+      "Annual HVAC Preventive Maintenance AMC"
+    ],
+    description: "Specialist HVAC engineers experienced in high-rise split AC outdoor unit bracket installations and eco-refrigerant refilling.",
+    reviews: [
+      {
+        id: "rev-106",
+        residentName: "Michael Chang",
+        unitNumber: "B-302",
+        rating: 4,
+        comment: "Serviced 3 split AC units in our apartment. Cools significantly better now.",
+        date: "2026-06-29"
+      }
+    ]
+  },
+  {
+    id: "vs-6",
+    name: "CleanHome Deep Scrubbing & Eco Pest Control",
+    category: "Housekeeping & Pest Control",
+    contactPerson: "Maria Fernandez",
+    phone: "+1 (555) 111-9988",
+    whatsapp: "+15551119988",
+    email: "bookings@cleanhomepro.com",
+    address: "22 Horizon Square",
+    rating: 4.9,
+    reviewCount: 47,
+    is24x7Emergency: false,
+    isRwaVerified: true,
+    verificationDate: "2026-04-05",
+    operatingHours: "08:00 AM - 07:00 PM Daily",
+    estimatedResponseTime: "Advance Booking Required (1 Day)",
+    pricingInfo: "Flat rates based on Apartment BHK size",
+    servicesOffered: [
+      "Move-in & Post-Renovation Deep Cleaning",
+      "Odorless Herbal Cockroach & Termite Treatment",
+      "Sofa, Mattress & Carpet Steam Extraction",
+      "Balcony Pigeon Netting & Glass Panel Wash",
+      "Disinfection & Sanitization Spray"
+    ],
+    description: "Premier residential cleaning agency utilizing eco-friendly non-toxic herbal formulations safe for pets and children.",
+    reviews: [
+      {
+        id: "rev-107",
+        residentName: "Sarah Jenkins",
+        unitNumber: "A-102",
+        rating: 5,
+        comment: "Their herbal pest control completely eliminated kitchen ants without any toxic smell!",
+        date: "2026-05-18"
+      }
+    ]
+  },
+  {
+    id: "vs-7",
+    name: "WoodCraft Master Carpentry & Locksmith",
+    category: "Carpentry & Handyman",
+    contactPerson: "Vikram Singh",
+    phone: "+1 (555) 444-2233",
+    whatsapp: "+15554442233",
+    address: "Old Town Craft Workshop",
+    rating: 4.8,
+    reviewCount: 31,
+    is24x7Emergency: true,
+    isRwaVerified: true,
+    verificationDate: "2026-01-22",
+    operatingHours: "08:00 AM - 09:00 PM (Emergency Locksmith 24/7)",
+    estimatedResponseTime: "25 - 35 Mins",
+    pricingInfo: "Reasonable hourly handyman labor",
+    servicesOffered: [
+      "Emergency Door Lock Pick & Key Replacement",
+      "Digital Smart Lock & Video Doorbell Installation",
+      "Modular Kitchen Cabinet Hinge Adjustment",
+      "Custom Shelving, TV Wall Mount & Furniture Assembly",
+      "Door Weatherstripping & Latch Repairs"
+    ],
+    description: "Expert locksmith and custom carpenter. Provides 24/7 lockout assistance for residents locked out of their apartments.",
+    reviews: [
+      {
+        id: "rev-108",
+        residentName: "Dr. Marcus Vance",
+        unitNumber: "B-101",
+        rating: 5,
+        comment: "Mounted our 75-inch TV and assembled IKEA bookshelves neatly. Top notch carpenter!",
+        date: "2026-07-02"
+      }
+    ]
+  }
+];
+
+
+

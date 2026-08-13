@@ -16,7 +16,10 @@ import {
   Siren,
   X,
   PhoneCall,
-  AlertTriangle
+  AlertTriangle,
+  FolderLock,
+  User,
+  Zap
 } from "lucide-react";
 
 interface OverviewDashboardProps {
@@ -123,6 +126,51 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({ setActiveT
             >
               <Users className="w-4 h-4 text-indigo-600" />
               <span>Community Hub</span>
+            </button>
+
+            <button
+              id="dash-btn-document-locker"
+              onClick={() => setActiveTab("documents")}
+              className="px-3.5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-900 border border-slate-200 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition"
+            >
+              <FolderLock className="w-4 h-4 text-slate-700" />
+              <span>Document Locker</span>
+            </button>
+
+            <button
+              id="dash-btn-my-profile"
+              onClick={() => setActiveTab("profile")}
+              className="px-3.5 py-2.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-900 border border-indigo-200 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition"
+            >
+              <User className="w-4 h-4 text-indigo-600" />
+              <span>My Profile</span>
+            </button>
+
+            <button
+              id="dash-btn-smart-utilities"
+              onClick={() => setActiveTab("utilities")}
+              className="px-3.5 py-2.5 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition"
+            >
+              <Zap className="w-4 h-4 text-amber-600" />
+              <span>Smart Utilities</span>
+            </button>
+
+            <button
+              id="dash-btn-verified-services"
+              onClick={() => setActiveTab("directory")}
+              className="px-3.5 py-2.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border border-emerald-200 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition"
+            >
+              <PhoneCall className="w-4 h-4 text-emerald-600" />
+              <span>Verified Services</span>
+            </button>
+
+            <button
+              id="dash-btn-society-calendar"
+              onClick={() => setActiveTab("calendar")}
+              className="px-3.5 py-2.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-900 border border-indigo-200 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition"
+            >
+              <Calendar className="w-4 h-4 text-indigo-600" />
+              <span>Society Calendar</span>
             </button>
 
             <button

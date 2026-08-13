@@ -14,7 +14,15 @@ import {
   ServiceVendor,
   PushNotification,
   AuditLog,
-  GdprConsent
+  GdprConsent,
+  DocumentItem,
+  SocietyEvent,
+  VerifiedService,
+  VerifiedServiceReview,
+  FamilyMember,
+  PetProfile,
+  NotificationChannelPreferences,
+  Vehicle
 } from "../types";
 import {
   initialProfiles,
@@ -30,7 +38,10 @@ import {
   initialVendors,
   initialNotifications,
   initialAuditLogs,
-  initialGdprConsent
+  initialGdprConsent,
+  initialDocuments,
+  initialSocietyEvents,
+  initialVerifiedServices
 } from "../data/initialData";
 
 interface SocietyContextType {
@@ -55,6 +66,9 @@ interface SocietyContextType {
   notifications: PushNotification[];
   auditLogs: AuditLog[];
   gdprConsent: GdprConsent;
+  documents: DocumentItem[];
+  societyEvents: SocietyEvent[];
+  verifiedServices: VerifiedService[];
 
   // Actions
   payBill: (billId: string, method: PaymentTransaction['method']) => Promise<{ success: boolean; receiptId: string }>;
@@ -77,7 +91,30 @@ interface SocietyContextType {
   clearNotifications: () => void;
   triggerPushNotification: (title: string, body: string, type: PushNotification['type']) => void;
   updateGdprConsent: (newConsent: Partial<GdprConsent>) => void;
+  addDocument: (doc: Omit<DocumentItem, 'id' | 'uploadDate' | 'downloadCount' | 'uploadedBy' | 'uploadedByRole'>) => DocumentItem;
+  deleteDocument: (id: string) => void;
+  incrementDocumentDownload: (id: string) => void;
+  addSocietyEvent: (event: Omit<SocietyEvent, 'id' | 'rsvpCount' | 'rsvpedBy'>) => SocietyEvent;
+  toggleEventRsvp: (eventId: string) => void;
+  deleteSocietyEvent: (id: string) => void;
+
+  addVerifiedService: (service: Omit<VerifiedService, 'id' | 'rating' | 'reviewCount' | 'reviews' | 'verificationDate'>) => VerifiedService;
+  addServiceReview: (serviceId: string, rating: number, comment: string) => void;
+  toggleServiceVerification: (serviceId: string) => void;
+  deleteVerifiedService: (id: string) => void;
   
+  // Resident Profile Management
+  updateUserProfile: (updatedData: Partial<UserProfile>) => void;
+  addFamilyMember: (member: Omit<FamilyMember, 'id'>) => FamilyMember;
+  updateFamilyMember: (id: string, updatedData: Partial<FamilyMember>) => void;
+  deleteFamilyMember: (id: string) => void;
+  addPet: (pet: Omit<PetProfile, 'id'>) => PetProfile;
+  updatePet: (id: string, updatedData: Partial<PetProfile>) => void;
+  deletePet: (id: string) => void;
+  updateNotificationPreferences: (preferences: NotificationChannelPreferences) => void;
+  addVehicle: (vehicle: Vehicle) => void;
+  deleteVehicle: (regNo: string) => void;
+
   // Backup & Storage
   exportDataJSON: () => string;
   importDataJSON: (jsonStr: string) => boolean;
@@ -98,12 +135,13 @@ export const SocietyProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }
   };
 
-  const [profiles] = useState<UserProfile[]>(initialProfiles);
+  const [profiles, setProfiles] = useState<UserProfile[]>(() => loadStoredData("profiles", initialProfiles));
   const [currentUser, setCurrentUser] = useState<UserProfile>(() => {
     const savedRole = localStorage.getItem("societyhub_activeRole");
-    if (savedRole === "admin") return initialProfiles[1];
-    if (savedRole === "security") return initialProfiles[2];
-    return initialProfiles[0];
+    const loadedProfiles = loadStoredData("profiles", initialProfiles);
+    if (savedRole === "admin") return loadedProfiles.find(p => p.role === "admin") || loadedProfiles[1];
+    if (savedRole === "security") return loadedProfiles.find(p => p.role === "security") || loadedProfiles[2];
+    return loadedProfiles.find(p => p.role === "resident") || loadedProfiles[0];
   });
 
   const [isMobileView, setIsMobileView] = useState<boolean>(false);
@@ -121,6 +159,9 @@ export const SocietyProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const [notifications, setNotifications] = useState<PushNotification[]>(() => loadStoredData("notifications", initialNotifications));
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>(() => loadStoredData("auditLogs", initialAuditLogs));
   const [gdprConsent, setGdprConsent] = useState<GdprConsent>(() => loadStoredData("gdprConsent", initialGdprConsent));
+  const [documents, setDocuments] = useState<DocumentItem[]>(() => loadStoredData("documents", initialDocuments));
+  const [societyEvents, setSocietyEvents] = useState<SocietyEvent[]>(() => loadStoredData("societyEvents", initialSocietyEvents));
+  const [verifiedServices, setVerifiedServices] = useState<VerifiedService[]>(() => loadStoredData("verifiedServices", initialVerifiedServices));
 
   // Sync to local storage
   useEffect(() => {
@@ -166,6 +207,26 @@ export const SocietyProvider: React.FC<{ children: React.ReactNode }> = ({ child
   useEffect(() => {
     localStorage.setItem("societyhub_gdprConsent", JSON.stringify(gdprConsent));
   }, [gdprConsent]);
+
+  useEffect(() => {
+    localStorage.setItem("societyhub_documents", JSON.stringify(documents));
+  }, [documents]);
+
+  useEffect(() => {
+    localStorage.setItem("societyhub_societyEvents", JSON.stringify(societyEvents));
+  }, [societyEvents]);
+
+  useEffect(() => {
+    localStorage.setItem("societyhub_verifiedServices", JSON.stringify(verifiedServices));
+  }, [verifiedServices]);
+
+  useEffect(() => {
+    localStorage.setItem("societyhub_profiles", JSON.stringify(profiles));
+  }, [profiles]);
+
+  useEffect(() => {
+    localStorage.setItem("societyhub_currentUser", JSON.stringify(currentUser));
+  }, [currentUser]);
 
   const switchRole = (role: UserRole) => {
     const targetUser = profiles.find(p => p.role === role) || profiles[0];
@@ -592,7 +653,252 @@ export const SocietyProvider: React.FC<{ children: React.ReactNode }> = ({ child
     logAuditAction("GDPR Data Export", "Updated user GDPR data privacy consent preferences");
   };
 
-  // 11. Backup State functions
+  // 11. Document Locker Actions
+  const addDocument = (docData: Omit<DocumentItem, 'id' | 'uploadDate' | 'downloadCount' | 'uploadedBy' | 'uploadedByRole'>): DocumentItem => {
+    const newDoc: DocumentItem = {
+      ...docData,
+      id: "doc-" + Date.now(),
+      uploadDate: new Date().toISOString().split("T")[0],
+      downloadCount: 0,
+      uploadedBy: currentUser.name,
+      uploadedByRole: currentUser.role === 'admin' ? 'admin' : 'resident'
+    };
+    setDocuments(prev => [newDoc, ...prev]);
+    logAuditAction("Admin Rule Change", `Uploaded new document to Document Locker: "${newDoc.title}" (${newDoc.category})`);
+    triggerPushNotification(
+      `📁 Document Uploaded: ${newDoc.title}`,
+      `${currentUser.name} uploaded a document under ${newDoc.category}.`,
+      "Notice"
+    );
+    return newDoc;
+  };
+
+  const deleteDocument = (id: string) => {
+    const target = documents.find(d => d.id === id);
+    setDocuments(prev => prev.filter(d => d.id !== id));
+    if (target) {
+      logAuditAction("Admin Rule Change", `Deleted document from Locker: "${target.title}"`);
+    }
+  };
+
+  const incrementDocumentDownload = (id: string) => {
+    setDocuments(prev => prev.map(d => {
+      if (d.id === id) {
+        return { ...d, downloadCount: d.downloadCount + 1 };
+      }
+      return d;
+    }));
+    const doc = documents.find(d => d.id === id);
+    if (doc) {
+      logAuditAction("GDPR Data Export", `Downloaded document "${doc.title}" from Document Locker`);
+    }
+  };
+
+  // 12. Society Calendar Actions
+  const addSocietyEvent = (eventData: Omit<SocietyEvent, 'id' | 'rsvpCount' | 'rsvpedBy'>): SocietyEvent => {
+    const newEvent: SocietyEvent = {
+      ...eventData,
+      id: "evt-" + Date.now(),
+      rsvpCount: 1,
+      rsvpedBy: [currentUser.unitNumber]
+    };
+    setSocietyEvents(prev => [newEvent, ...prev]);
+    logAuditAction("Admin Rule Change", `Scheduled society event: "${newEvent.title}" on ${newEvent.date}`);
+    triggerPushNotification(
+      `📅 New Event Scheduled: ${newEvent.title}`,
+      `Scheduled for ${newEvent.date} (${newEvent.startTime} - ${newEvent.endTime}) at ${newEvent.location}.`,
+      "Notice"
+    );
+    return newEvent;
+  };
+
+  const toggleEventRsvp = (eventId: string) => {
+    setSocietyEvents(prev => prev.map(e => {
+      if (e.id === eventId) {
+        const hasRsvped = e.rsvpedBy.includes(currentUser.unitNumber);
+        const newRsvpedBy = hasRsvped
+          ? e.rsvpedBy.filter(u => u !== currentUser.unitNumber)
+          : [...e.rsvpedBy, currentUser.unitNumber];
+        return {
+          ...e,
+          rsvpCount: newRsvpedBy.length,
+          rsvpedBy: newRsvpedBy
+        };
+      }
+      return e;
+    }));
+  };
+
+  const deleteSocietyEvent = (id: string) => {
+    const target = societyEvents.find(e => e.id === id);
+    setSocietyEvents(prev => prev.filter(e => e.id !== id));
+    if (target) {
+      logAuditAction("Admin Rule Change", `Cancelled society event: "${target.title}"`);
+    }
+  };
+
+  // 13. Verified Services Directory Handlers
+  const addVerifiedService = (serviceData: Omit<VerifiedService, 'id' | 'rating' | 'reviewCount' | 'reviews' | 'verificationDate'>): VerifiedService => {
+    const newService: VerifiedService = {
+      ...serviceData,
+      id: `vs-${Date.now()}`,
+      rating: 5.0,
+      reviewCount: 1,
+      verificationDate: new Date().toISOString().split("T")[0],
+      reviews: [
+        {
+          id: `rev-${Date.now()}`,
+          residentName: currentUser.name,
+          unitNumber: currentUser.unitNumber,
+          rating: 5,
+          comment: "Newly submitted local service provider recommendation.",
+          date: new Date().toISOString().split("T")[0]
+        }
+      ]
+    };
+
+    setVerifiedServices(prev => [newService, ...prev]);
+    logAuditAction("Admin Rule Change", `Added verified service provider: "${newService.name}" (${newService.category})`);
+    triggerPushNotification("New Local Service Added", `"${newService.name}" is now listed in the Verified Services directory.`, "Notice");
+    return newService;
+  };
+
+  const addServiceReview = (serviceId: string, rating: number, comment: string) => {
+    setVerifiedServices(prev =>
+      prev.map(s => {
+        if (s.id === serviceId) {
+          const newReview: VerifiedServiceReview = {
+            id: `rev-${Date.now()}`,
+            residentName: currentUser.name,
+            unitNumber: currentUser.unitNumber,
+            rating,
+            comment,
+            date: new Date().toISOString().split("T")[0]
+          };
+
+          const updatedReviews = [newReview, ...s.reviews];
+          const avgRating = Number(
+            (updatedReviews.reduce((acc, r) => acc + r.rating, 0) / updatedReviews.length).toFixed(1)
+          );
+
+          return {
+            ...s,
+            rating: avgRating,
+            reviewCount: updatedReviews.length,
+            reviews: updatedReviews
+          };
+        }
+        return s;
+      })
+    );
+    triggerPushNotification("Service Review Posted", `Your review for service #${serviceId} has been posted.`, "Notice");
+  };
+
+  const toggleServiceVerification = (serviceId: string) => {
+    setVerifiedServices(prev =>
+      prev.map(s => (s.id === serviceId ? { ...s, isRwaVerified: !s.isRwaVerified } : s))
+    );
+    logAuditAction("Admin Rule Change", `Toggled RWA verification badge for service ID: ${serviceId}`);
+  };
+
+  const deleteVerifiedService = (id: string) => {
+    const target = verifiedServices.find(s => s.id === id);
+    setVerifiedServices(prev => prev.filter(s => s.id !== id));
+    if (target) {
+      logAuditAction("Admin Rule Change", `Removed service listing: "${target.name}"`);
+    }
+  };
+
+  // 14. Resident Profile Management Handlers
+  const updateUserProfile = (updatedData: Partial<UserProfile>) => {
+    setCurrentUser(prev => {
+      const updated = { ...prev, ...updatedData };
+      setProfiles(pList => pList.map(p => (p.id === updated.id ? updated : p)));
+      return updated;
+    });
+    logAuditAction("Security", `Updated profile contact details for unit ${currentUser.unitNumber}`);
+  };
+
+  const addFamilyMember = (memberData: Omit<FamilyMember, 'id'>): FamilyMember => {
+    const newMember: FamilyMember = {
+      ...memberData,
+      id: `fm-${Date.now()}`
+    };
+    const currentMembers = currentUser.familyMembers || [];
+    const updatedMembers = [...currentMembers, newMember];
+    updateUserProfile({ familyMembers: updatedMembers });
+    logAuditAction("Security", `Added family member ${newMember.name} (${newMember.relation}) to unit ${currentUser.unitNumber}`);
+    triggerPushNotification("Family Member Added", `${newMember.name} has been added to unit ${currentUser.unitNumber} gate access list.`, "Notice");
+    return newMember;
+  };
+
+  const updateFamilyMember = (id: string, updatedData: Partial<FamilyMember>) => {
+    const currentMembers = currentUser.familyMembers || [];
+    const updatedMembers = currentMembers.map(m => (m.id === id ? { ...m, ...updatedData } : m));
+    updateUserProfile({ familyMembers: updatedMembers });
+  };
+
+  const deleteFamilyMember = (id: string) => {
+    const currentMembers = currentUser.familyMembers || [];
+    const target = currentMembers.find(m => m.id === id);
+    const updatedMembers = currentMembers.filter(m => m.id !== id);
+    updateUserProfile({ familyMembers: updatedMembers });
+    if (target) {
+      logAuditAction("Security", `Removed family member ${target.name} from unit ${currentUser.unitNumber}`);
+      triggerPushNotification("Family Member Removed", `${target.name} was removed from unit ${currentUser.unitNumber}.`, "Notice");
+    }
+  };
+
+  const addPet = (petData: Omit<PetProfile, 'id'>): PetProfile => {
+    const newPet: PetProfile = {
+      ...petData,
+      id: `pet-${Date.now()}`
+    };
+    const currentPets = currentUser.pets || [];
+    const updatedPets = [...currentPets, newPet];
+    updateUserProfile({ pets: updatedPets });
+    logAuditAction("Security", `Registered pet ${newPet.name} (${newPet.species}) under unit ${currentUser.unitNumber}`);
+    triggerPushNotification("Pet Registered", `${newPet.name} (${newPet.species}) registered under unit ${currentUser.unitNumber}.`, "Notice");
+    return newPet;
+  };
+
+  const updatePet = (id: string, updatedData: Partial<PetProfile>) => {
+    const currentPets = currentUser.pets || [];
+    const updatedPets = currentPets.map(p => (p.id === id ? { ...p, ...updatedData } : p));
+    updateUserProfile({ pets: updatedPets });
+  };
+
+  const deletePet = (id: string) => {
+    const currentPets = currentUser.pets || [];
+    const target = currentPets.find(p => p.id === id);
+    const updatedPets = currentPets.filter(p => p.id !== id);
+    updateUserProfile({ pets: updatedPets });
+    if (target) {
+      logAuditAction("Security", `Removed pet record ${target.name} from unit ${currentUser.unitNumber}`);
+    }
+  };
+
+  const updateNotificationPreferences = (preferences: NotificationChannelPreferences) => {
+    updateUserProfile({ notificationPreferences: preferences });
+    triggerPushNotification("Notification Delivery Preferences Saved", "Your notification channels and quiet hours settings have been saved.", "Notice");
+  };
+
+  const addVehicle = (vehicle: Vehicle) => {
+    const currentVehicles = currentUser.vehicles || [];
+    const updatedVehicles = [...currentVehicles, vehicle];
+    updateUserProfile({ vehicles: updatedVehicles });
+    logAuditAction("Security", `Registered vehicle ${vehicle.regNo} (${vehicle.type}) for unit ${currentUser.unitNumber}`);
+    triggerPushNotification("Vehicle Registered", `Vehicle ${vehicle.regNo} registered for unit ${currentUser.unitNumber}.`, "Notice");
+  };
+
+  const deleteVehicle = (regNo: string) => {
+    const currentVehicles = currentUser.vehicles || [];
+    const updatedVehicles = currentVehicles.filter(v => v.regNo !== regNo);
+    updateUserProfile({ vehicles: updatedVehicles });
+    logAuditAction("Security", `Deregistered vehicle ${regNo} from unit ${currentUser.unitNumber}`);
+  };
+
+  // 14. Backup State functions
   const exportDataJSON = () => {
     const backupObj = {
       version: "1.0",
@@ -609,7 +915,10 @@ export const SocietyProvider: React.FC<{ children: React.ReactNode }> = ({ child
       financials,
       notifications,
       auditLogs,
-      gdprConsent
+      gdprConsent,
+      documents,
+      societyEvents,
+      verifiedServices
     };
     logAuditAction("GDPR Data Export", "Exported complete cloud backup JSON archive");
     return JSON.stringify(backupObj, null, 2);
@@ -629,6 +938,9 @@ export const SocietyProvider: React.FC<{ children: React.ReactNode }> = ({ child
       if (parsed.notifications) setNotifications(parsed.notifications);
       if (parsed.auditLogs) setAuditLogs(parsed.auditLogs);
       if (parsed.gdprConsent) setGdprConsent(parsed.gdprConsent);
+      if (parsed.documents) setDocuments(parsed.documents);
+      if (parsed.societyEvents) setSocietyEvents(parsed.societyEvents);
+      if (parsed.verifiedServices) setVerifiedServices(parsed.verifiedServices);
       
       logAuditAction("GDPR Data Export", "Successfully restored society state from JSON backup");
       triggerPushNotification("Cloud Backup Restored", "Data state restored successfully from backup file.", "Notice");
@@ -650,6 +962,9 @@ export const SocietyProvider: React.FC<{ children: React.ReactNode }> = ({ child
     setNotifications(initialNotifications);
     setAuditLogs(initialAuditLogs);
     setGdprConsent(initialGdprConsent);
+    setDocuments(initialDocuments);
+    setSocietyEvents(initialSocietyEvents);
+    setVerifiedServices(initialVerifiedServices);
     localStorage.clear();
     logAuditAction("GDPR Data Export", "Reset application database state to initial seed data");
     triggerPushNotification("System Reset", "Society database reset to initial state.", "Notice");
@@ -677,6 +992,9 @@ export const SocietyProvider: React.FC<{ children: React.ReactNode }> = ({ child
         notifications,
         auditLogs,
         gdprConsent,
+        documents,
+        societyEvents,
+        verifiedServices,
 
         payBill,
         sendLateFeeReminder,
@@ -698,6 +1016,27 @@ export const SocietyProvider: React.FC<{ children: React.ReactNode }> = ({ child
         clearNotifications,
         triggerPushNotification,
         updateGdprConsent,
+        addDocument,
+        deleteDocument,
+        incrementDocumentDownload,
+        addSocietyEvent,
+        toggleEventRsvp,
+        deleteSocietyEvent,
+        addVerifiedService,
+        addServiceReview,
+        toggleServiceVerification,
+        deleteVerifiedService,
+
+        updateUserProfile,
+        addFamilyMember,
+        updateFamilyMember,
+        deleteFamilyMember,
+        addPet,
+        updatePet,
+        deletePet,
+        updateNotificationPreferences,
+        addVehicle,
+        deleteVehicle,
 
         exportDataJSON,
         importDataJSON,

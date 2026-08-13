@@ -12,6 +12,11 @@ import { CommunityHub } from "./components/community/CommunityHub";
 import { FinancialReports } from "./components/admin/FinancialReports";
 import { GDPRBackupCenter } from "./components/gdpr/GDPRBackupCenter";
 import { RealtimeAnalytics } from "./components/analytics/RealtimeAnalytics";
+import { DocumentLocker } from "./components/documents/DocumentLocker";
+import { SocietyCalendar } from "./components/calendar/SocietyCalendar";
+import { VerifiedServicesDirectory } from "./components/directory/VerifiedServicesDirectory";
+import { ResidentProfileManagement } from "./components/profile/ResidentProfileManagement";
+import { SmartUtilitiesDashboard } from "./components/utilities/SmartUtilitiesDashboard";
 import { PaymentGatewayModal } from "./components/PaymentGatewayModal";
 import { DuesBill } from "./types";
 
@@ -59,6 +64,16 @@ function MainContent() {
             {activeTab === "tickets" && <MaintenanceHelpdesk />}
 
             {activeTab === "community" && <CommunityHub />}
+
+            {activeTab === "utilities" && <SmartUtilitiesDashboard />}
+
+            {activeTab === "directory" && <VerifiedServicesDirectory />}
+
+            {activeTab === "profile" && <ResidentProfileManagement />}
+
+            {activeTab === "calendar" && <SocietyCalendar />}
+
+            {activeTab === "documents" && <DocumentLocker />}
 
             {activeTab === "analytics" && <RealtimeAnalytics />}
 

@@ -14,12 +14,17 @@ import {
   LayoutDashboard,
   CreditCard,
   CalendarDays,
+  Calendar,
   Megaphone,
   DoorOpen,
   Wrench,
   BarChart3,
   ShieldCheck,
-  Users
+  Users,
+  FolderLock,
+  PhoneCall,
+  User,
+  Zap
 } from "lucide-react";
 import { NotificationDrawer } from "./NotificationDrawer";
 
@@ -62,6 +67,11 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
     { id: "visitors", label: "Visitor Passes", icon: DoorOpen },
     { id: "tickets", label: "Helpdesk", icon: Wrench },
     { id: "community", label: "Community Hub", icon: Users },
+    { id: "utilities", label: "Smart Utilities", icon: Zap },
+    { id: "directory", label: "Verified Services", icon: PhoneCall },
+    { id: "profile", label: "Resident Profile", icon: User },
+    { id: "calendar", label: "Society Calendar", icon: Calendar },
+    { id: "documents", label: "Document Locker", icon: FolderLock },
     { id: "analytics", label: "Analytics", icon: BarChart3 },
     { id: "financials", label: "Admin & Reports", icon: ShieldCheck },
     { id: "gdpr", label: "Backup & GDPR", icon: Database }
@@ -211,6 +221,17 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
                       </div>
                       {currentUser.role === 'security' && <CheckCircle2 className="w-4 h-4 text-emerald-600 ml-auto" />}
                     </button>
+
+                    <div className="pt-2 mt-1 border-t border-slate-100">
+                      <button
+                        id="nav-dropdown-manage-profile"
+                        onClick={() => { setActiveTab('profile'); setShowRoleMenu(false); }}
+                        className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-left text-xs font-bold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 transition"
+                      >
+                        <User className="w-4 h-4 text-indigo-600" />
+                        <span>Manage Unit Profile & Family</span>
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>
