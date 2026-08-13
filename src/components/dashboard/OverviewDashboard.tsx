@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useSociety } from "../../context/SocietyContext";
 import {
   DollarSign,
@@ -12,7 +12,11 @@ import {
   ArrowRight,
   CheckCircle2,
   Clock,
-  Plus
+  Plus,
+  Siren,
+  X,
+  PhoneCall,
+  AlertTriangle
 } from "lucide-react";
 
 interface OverviewDashboardProps {
@@ -27,8 +31,28 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({ setActiveT
     visitors,
     tickets,
     bookings,
-    notices
+    notices,
+    triggerPushNotification,
+    logAuditAction
   } = useSociety();
+
+  // SOS Emergency Modal State
+  const [showSosModal, setShowSosModal] = useState(false);
+  const [sosCategory, setSosCategory] = useState<"Medical Emergency" | "Fire Alarm" | "Lift Trapped" | "Security Intruder">("Medical Emergency");
+  const [sosNotes, setSosNotes] = useState("");
+  const [sosSentSuccess, setSosSentSuccess] = useState(false);
+
+  // Handle Dispatch Emergency SOS
+  const handleTriggerSos = (e: React.FormEvent) => {
+    e.preventDefault();
+    triggerPushNotification(
+      `🚨 EMERGENCY SOS: ${sosCategory.toUpperCase()} ALERT`,
+      `CRITICAL URGENT ALERT from Flat ${currentUser.unitNumber} (${currentUser.name}): ${sosNotes || sosCategory}. Gate Security Desk & Emergency Staff dispatched!`,
+      "Urgent"
+    );
+    logAuditAction("Security", `Triggered Urgent SOS Emergency Panic: ${sosCategory} for Flat ${currentUser.unitNumber}`);
+    setSosSentSuccess(true);
+  };
 
   // Calculations
   const userBills = bills.filter(b => b.unitNumber === currentUser.unitNumber);
@@ -65,7 +89,17 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({ setActiveT
           </div>
 
           {/* Quick Call to Action */}
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex flex-wrap items-center gap-2 shrink-0">
+            {/* Emergency SOS Button */}
+            <button
+              id="dash-btn-sos-panic"
+              onClick={() => { setSosSentSuccess(false); setShowSosModal(true); }}
+              className="px-3.5 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-black flex items-center gap-1.5 shadow-xs transition animate-pulse uppercase tracking-wider"
+            >
+              <Siren className="w-4 h-4 text-white" />
+              <span>Emergency SOS</span>
+            </button>
+
             {pendingBill ? (
               <button
                 id="dash-btn-pay-dues"
@@ -315,6 +349,84 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({ setActiveT
         </div>
 
       </div>
+
+      {/* EMERGENCY SOS PANIC MODAL */}
+      {showSosModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 animate-fade-in">
+          <div className="bg-white border border-rose-200 rounded-2xl w-full max-w-md p-6 space-y-4 text-slate-900 shadow-xl relative">
+            <div className="flex justify-between items-center border-b border-slate-100 pb-3">
+              <div className="flex items-center gap-2 text-rose-600 font-bold text-base">
+                <Siren className="w-5 h-5 text-rose-600 animate-pulse" />
+                <h3>Dispatch Emergency Panic SOS</h3>
+              </div>
+              <button onClick={() => setShowSosModal(false)} className="p-1 rounded-xl text-slate-400 hover:text-slate-700">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {sosSentSuccess ? (
+              <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl text-center space-y-3">
+                <CheckCircle2 className="w-10 h-10 text-emerald-600 mx-auto" />
+                <h4 className="font-bold text-emerald-900 text-base">Emergency SOS Dispatched!</h4>
+                <p className="text-xs text-emerald-700">
+                  Officer Rajan (Gate 1 Security Desk) & RWA Staff have been alerted with location parameters for Flat {currentUser.unitNumber} ({currentUser.tower}).
+                </p>
+                <div className="p-3 bg-white rounded-lg border border-emerald-200 text-left text-[11px] font-mono text-emerald-900 space-y-1">
+                  <p>• Gate Security Hotline: Ext. 101 / +1 (555) 999-0000</p>
+                  <p>• Estate Manager: +1 (555) 345-6789</p>
+                  <p>• Emergency Services: 911</p>
+                </div>
+                <button
+                  onClick={() => setShowSosModal(false)}
+                  className="w-full py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs rounded-xl shadow-xs"
+                >
+                  Close Confirmation
+                </button>
+              </div>
+            ) : (
+              <form onSubmit={handleTriggerSos} className="space-y-3 text-xs">
+                <div>
+                  <label className="text-slate-700 block mb-1 font-bold">Emergency Category</label>
+                  <select
+                    value={sosCategory}
+                    onChange={e => setSosCategory(e.target.value as any)}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-900 focus:outline-none font-bold"
+                  >
+                    <option value="Medical Emergency">Medical Emergency (Ambulance Needed)</option>
+                    <option value="Fire Alarm">Fire / Smoke Alarm in Flat</option>
+                    <option value="Lift Trapped">Trapped Inside Tower Elevator</option>
+                    <option value="Security Intruder">Security Intruder / Gate Alert</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-slate-700 block mb-1 font-bold">Emergency Notes (Optional)</label>
+                  <textarea
+                    rows={2}
+                    placeholder="e.g. Need immediate medical attention in Flat A-402..."
+                    value={sosNotes}
+                    onChange={e => setSosNotes(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-900 focus:outline-none"
+                  />
+                </div>
+
+                <div className="bg-rose-50 border border-rose-200 p-3 rounded-xl text-[11px] text-rose-800 font-semibold space-y-1">
+                  <p>• Instantly broadcasts priority alert to Gate 1 Desk & RWA management.</p>
+                  <p>• Transmits Flat {currentUser.unitNumber} ({currentUser.tower}) contact details.</p>
+                </div>
+
+                <button
+                  type="submit"
+                  className="w-full py-3 bg-rose-600 hover:bg-rose-700 text-white font-black text-xs rounded-xl shadow-xs transition uppercase tracking-wider flex items-center justify-center gap-2"
+                >
+                  <Siren className="w-4 h-4" />
+                  <span>DISPATCH SOS PANIC BROADCAST</span>
+                </button>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
 
     </div>
   );
