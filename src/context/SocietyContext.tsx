@@ -85,7 +85,17 @@ interface SocietyContextType {
   createTicket: (data: Omit<MaintenanceTicket, 'id' | 'ticketNo' | 'residentName' | 'status' | 'createdAt'>) => MaintenanceTicket;
   updateTicketStatus: (ticketId: string, status: MaintenanceTicket['status'], assignedStaff?: string, notes?: string) => void;
   scheduleTicketVisit: (ticketId: string, scheduledDate: string, scheduledTime: string, serviceType?: MaintenanceTicket['serviceType']) => void;
-  rateTicket: (ticketId: string, rating: number, feedback: string) => void;
+  rateTicket: (
+    ticketId: string,
+    rating: number,
+    feedback: string,
+    qualityRating?: number,
+    speedRating?: number,
+    staffRating?: number,
+    feedbackTags?: string[],
+    isReopenRequested?: boolean
+  ) => void;
+  addManagementResponse: (ticketId: string, responseText: string) => void;
   addLedgerEntry: (item: Omit<FinancialLedgerItem, 'id'>) => void;
   markNotificationRead: (id: string) => void;
   clearNotifications: () => void;
@@ -94,6 +104,7 @@ interface SocietyContextType {
   addDocument: (doc: Omit<DocumentItem, 'id' | 'uploadDate' | 'downloadCount' | 'uploadedBy' | 'uploadedByRole'>) => DocumentItem;
   deleteDocument: (id: string) => void;
   incrementDocumentDownload: (id: string) => void;
+  updateDocumentSignatureStatus: (docId: string, status: 'Approved & Sealed' | 'Rejected', reviewNotes?: string) => void;
   addSocietyEvent: (event: Omit<SocietyEvent, 'id' | 'rsvpCount' | 'rsvpedBy'>) => SocietyEvent;
   toggleEventRsvp: (eventId: string) => void;
   deleteSocietyEvent: (id: string) => void;
@@ -576,13 +587,16 @@ export const SocietyProvider: React.FC<{ children: React.ReactNode }> = ({ child
   };
 
   const updateTicketStatus = (ticketId: string, status: MaintenanceTicket['status'], assignedStaff?: string, notes?: string) => {
+    const resolvedAtStr = status === "Resolved" ? new Date().toISOString().replace("T", " ").substring(0, 16) : undefined;
+    
     setTickets(prev => prev.map(t => {
       if (t.id === ticketId) {
         return {
           ...t,
           status,
           assignedStaff: assignedStaff !== undefined ? assignedStaff : t.assignedStaff,
-          resolutionNotes: notes !== undefined ? notes : t.resolutionNotes
+          resolutionNotes: notes !== undefined ? notes : t.resolutionNotes,
+          resolvedAt: status === "Resolved" ? (t.resolvedAt || resolvedAtStr) : t.resolvedAt
         };
       }
       return t;
@@ -619,9 +633,69 @@ export const SocietyProvider: React.FC<{ children: React.ReactNode }> = ({ child
     logAuditAction("Admin Rule Change", `Scheduled maintenance visit for ticket ${ticketId} on ${scheduledDate} at ${scheduledTime}`);
   };
 
-  const rateTicket = (ticketId: string, rating: number, feedback: string) => {
-    setTickets(prev => prev.map(t => t.id === ticketId ? { ...t, rating, feedbackComment: feedback } : t));
+  const rateTicket = (
+    ticketId: string,
+    rating: number,
+    feedback: string,
+    qualityRating?: number,
+    speedRating?: number,
+    staffRating?: number,
+    feedbackTags?: string[],
+    isReopenRequested?: boolean
+  ) => {
+    const nowStr = new Date().toISOString().replace("T", " ").substring(0, 16);
+
+    setTickets(prev => prev.map(t => {
+      if (t.id === ticketId) {
+        const nextStatus = isReopenRequested ? "In Progress" : t.status;
+        return {
+          ...t,
+          rating,
+          feedbackComment: feedback,
+          qualityRating: qualityRating !== undefined ? qualityRating : rating,
+          speedRating: speedRating !== undefined ? speedRating : rating,
+          staffRating: staffRating !== undefined ? staffRating : rating,
+          feedbackTags: feedbackTags || t.feedbackTags || [],
+          feedbackDate: nowStr,
+          isReopenRequested: Boolean(isReopenRequested),
+          status: nextStatus
+        };
+      }
+      return t;
+    }));
+
+    if (isReopenRequested) {
+      triggerPushNotification(
+        "⚠️ Maintenance Ticket Reopened",
+        `Resident reported unsatisfactory service on ticket. Ticket reopened for inspection.`,
+        "Ticket"
+      );
+    }
+
     logAuditAction("Security", `Submitted ${rating}-star review for ticket ${ticketId}`);
+  };
+
+  const addManagementResponse = (ticketId: string, responseText: string) => {
+    const nowStr = new Date().toISOString().replace("T", " ").substring(0, 16);
+
+    setTickets(prev => prev.map(t => {
+      if (t.id === ticketId) {
+        return {
+          ...t,
+          managementResponse: responseText,
+          managementResponseDate: nowStr
+        };
+      }
+      return t;
+    }));
+
+    triggerPushNotification(
+      "💬 Facility Management Response",
+      `Facility Manager responded to your service feedback.`,
+      "Ticket"
+    );
+
+    logAuditAction("Admin Rule Change", `Posted facility management response on ticket ${ticketId}`);
   };
 
   // 8. Financial Ledger
@@ -691,6 +765,39 @@ export const SocietyProvider: React.FC<{ children: React.ReactNode }> = ({ child
     const doc = documents.find(d => d.id === id);
     if (doc) {
       logAuditAction("GDPR Data Export", `Downloaded document "${doc.title}" from Document Locker`);
+    }
+  };
+
+  const updateDocumentSignatureStatus = (
+    docId: string,
+    status: 'Approved & Sealed' | 'Rejected',
+    reviewNotes?: string
+  ) => {
+    setDocuments(prev => prev.map(d => {
+      if (d.id === docId && d.eSignatureData) {
+        return {
+          ...d,
+          certifiedSeal: status === 'Approved & Sealed' ? true : d.certifiedSeal,
+          eSignatureData: {
+            ...d.eSignatureData,
+            status,
+            reviewedBy: currentUser.name,
+            reviewedAt: new Date().toISOString().split("T")[0],
+            reviewNotes: reviewNotes || (status === 'Approved & Sealed' ? "Approved by Society Administration" : "Requires revision")
+          }
+        };
+      }
+      return d;
+    }));
+
+    const targetDoc = documents.find(d => d.id === docId);
+    if (targetDoc) {
+      triggerPushNotification(
+        `✍️ E-Sign Application ${status}`,
+        `Your submission "${targetDoc.title}" status is now "${status}".`,
+        "Notice"
+      );
+      logAuditAction("Admin Rule Change", `Updated e-signature status for "${targetDoc.title}" to ${status}`);
     }
   };
 
@@ -1011,6 +1118,7 @@ export const SocietyProvider: React.FC<{ children: React.ReactNode }> = ({ child
         updateTicketStatus,
         scheduleTicketVisit,
         rateTicket,
+        addManagementResponse,
         addLedgerEntry,
         markNotificationRead,
         clearNotifications,
@@ -1019,6 +1127,7 @@ export const SocietyProvider: React.FC<{ children: React.ReactNode }> = ({ child
         addDocument,
         deleteDocument,
         incrementDocumentDownload,
+        updateDocumentSignatureStatus,
         addSocietyEvent,
         toggleEventRsvp,
         deleteSocietyEvent,

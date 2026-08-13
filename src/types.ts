@@ -192,11 +192,20 @@ export interface MaintenanceTicket {
   priority: 'High' | 'Medium' | 'Low';
   status: 'Open' | 'Assigned' | 'In Progress' | 'Resolved';
   createdAt: string;
+  resolvedAt?: string;
   assignedStaff?: string;
   estimatedHours?: number;
   resolutionNotes?: string;
-  rating?: number;
+  rating?: number; // Overall rating (1-5)
+  qualityRating?: number; // Quality of work (1-5)
+  speedRating?: number; // Speed of service & SLA punctuality (1-5)
+  staffRating?: number; // Technician courtesy & professionalism (1-5)
   feedbackComment?: string;
+  feedbackTags?: string[]; // e.g. ["Punctual", "Fixed First Try", "Clean Cleanup"]
+  feedbackDate?: string;
+  managementResponse?: string;
+  managementResponseDate?: string;
+  isReopenRequested?: boolean;
   attachmentUrl?: string;
   scheduledDate?: string; // YYYY-MM-DD format e.g. "2026-08-12"
   scheduledTime?: string; // e.g. "10:30 AM"
@@ -255,6 +264,14 @@ export interface GdprConsent {
   lastUpdated: string;
 }
 
+export type EFormType = 
+  | 'Rental Agreement & Tenant Registration'
+  | 'Move-In / Move-Out Request'
+  | 'Renovation & Interior NOC'
+  | 'Pet Registration & Undertaking'
+  | 'Vehicle Parking Slot Allocation'
+  | 'Clubhouse Event Authorization';
+
 export interface DocumentItem {
   id: string;
   title: string;
@@ -271,6 +288,27 @@ export interface DocumentItem {
   tags: string[];
   certifiedSeal?: boolean;
   fileUrl?: string;
+
+  // E-Signature Extension Metadata
+  isESigned?: boolean;
+  eFormType?: EFormType;
+  eSignatureData?: {
+    signatureType: 'draw' | 'type' | 'upload';
+    signatureContent: string; // Base64 data URL for drawn/uploaded image or typed text
+    signerName: string;
+    signerEmail: string;
+    signerPhone: string;
+    signerUnit: string;
+    signedAt: string;
+    verificationCode: string; // e.g. "ESIGN-2026-RENT-9912"
+    sha256Hash: string;
+    ipAddress: string;
+    status: 'Pending Review' | 'Approved & Sealed' | 'Rejected';
+    formFieldsSummary: Record<string, string>;
+    reviewedBy?: string;
+    reviewedAt?: string;
+    reviewNotes?: string;
+  };
 }
 
 export interface VerifiedServiceReview {
